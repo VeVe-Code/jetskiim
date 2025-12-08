@@ -1,4 +1,4 @@
-let mongoose = reqire('mongoose')
+let mongoose = require('mongoose')
 
 let Schema = mongoose.Schema
 
