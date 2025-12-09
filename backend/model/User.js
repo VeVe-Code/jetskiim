@@ -3,26 +3,28 @@ let mongoose = require('mongoose')
 let Schema = mongoose.Schema
 
 let UserSchema = new Schema({
-     username:{
+    clerkId: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    username: {
         type: String,
         required: true
-     },
-     email:{
-        type:String,
-        required:true
-     },
-       email:{
-        type:String,
-        required:true
-     },
-     Image:{
-        type:String,
-        required:true
-     },
-     role:{
-        type:String,
-        enum:["user","owner"],default:"user"
-     }
-},{timestamps:true})
+    },
+    email: {
+        type: String,
+        required: true
+    },
+    image: {
+        type: String,
+        required: true
+    },
+    role: {
+        type: String,
+        enum: ["user", "owner"],
+        default: "user"
+    }
+}, { timestamps: true })
 
-module.exports=mongoose.model("User",UserSchema)
+module.exports = mongoose.model("User", UserSchema)

@@ -112,14 +112,15 @@ let clertWebhooks = async (req, res) => {
             "svix-signature": req.headers["svix-signature"]
         }
 
-        await whook.verify(JSON.stringify(req.body), headers)
+        // IMPORTANT: req.body is RAW Buffer
+        const evt = await whook.verify(req.body, headers)
 
-        const { data, type } = req.body
+        const { data, type } = evt
 
         let userData = {
             clerkId: data.id,
-            email: data.email_addresses[0].email_address,
-            username: data.first_name + " " + data.last_name,
+            email: data.email_addresses?.[0]?.email_address,
+            username: (data.first_name || "") + " " + (data.last_name || ""),
             image: data.image_url
         }
 
@@ -136,16 +137,14 @@ let clertWebhooks = async (req, res) => {
                 break
 
             case "user.deleted":
-                await User.findOneAndDelete(
-                    { clerkId: data.id }
-                )
+                await User.findOneAndDelete({ clerkId: data.id })
                 break
         }
 
         res.json({ success: true, message: "Webhook Received" })
     }
     catch (e) {
-        console.log(e.message)
+        console.log("Webhook Error:", e.message)
         res.json({ success: false, message: e.message })
     }
 }

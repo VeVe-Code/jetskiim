@@ -1,9 +1,6 @@
 let express = require('express')
 require('dotenv').config()
 let app = express()
-
-app.use(express.json())  // IMPORTANT
-
 let morgan = require('morgan')
 let { clerkMiddleware } = require('@clerk/express')
 var cors = require('cors')
@@ -20,7 +17,11 @@ mongoose.connect(mongoURL).then(() => {
     })
 })
 
+// RAW BODY → MUST BEFORE EVERYTHING
+app.use('/api/clerk', express.raw({ type: "*/*" }))
+
 app.use(clerkMiddleware())
+app.use(express.json())
 app.use(morgan('dev'))
 
 app.use(cors({
