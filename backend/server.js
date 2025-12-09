@@ -7,7 +7,7 @@ var cors = require('cors')
 let jetskiiRoute = require('./route/jetskii')
 let mongoose = require('mongoose')
 const clertWebhooks = require('./controller/clerkWebhooks')
-let mongoURL = 'mongodb+srv://kzt2288330022_db_user:test1234@cluster0.vm3bqh9.mongodb.net/?appName=Cluster0'
+let mongoURL = process.env.MONGODB_URI 
 mongoose.connect(mongoURL).then(() => {
     console.log('connected to db')
     app.listen(process.env.PORT,()=>{
