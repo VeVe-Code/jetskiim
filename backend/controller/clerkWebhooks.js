@@ -66,7 +66,7 @@ let clertWebhooks = async (req, res) => {
         let userData = {
             clerkId: data.id,
             email: data.email_addresses[0].email_address,
-            username: `${data.first_name} ${data.last_name}`,
+            username: data.first_name+ " " +data.last_name,
             image: data.image_url
         }
 
@@ -77,11 +77,11 @@ let clertWebhooks = async (req, res) => {
                 break
 
             case "user.updated":
-                await User.findOneAndUpdate({ clerkId: data.id }, userData)
+                await User.findOneAndUpdate (data.id, userData)
                 break
 
             case "user.deleted":
-                await User.findOneAndDelete({ clerkId: data.id })
+                await User.findOneAndDelete( data.id )
                 break
         }
 
