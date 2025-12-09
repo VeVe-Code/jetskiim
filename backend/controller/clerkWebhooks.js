@@ -46,7 +46,7 @@
 // }
 // module.exports=clertWebhooks
 
-let User = require('../model/user')
+let User = require('../model/User')
 const { Webhook } = require("svix")
 
 let clertWebhooks = async (req, res) => {
