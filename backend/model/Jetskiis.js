@@ -39,11 +39,11 @@ let Schema = mongoose.Schema;
 
 let JetskiiSchema = new Schema(
 {
-    owner: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true   // ← VERY IMPORTANT
-    },
+    // owner: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "User",
+    //     required: true   // ← VERY IMPORTANT
+    // },
 
     title: {
         type: String,

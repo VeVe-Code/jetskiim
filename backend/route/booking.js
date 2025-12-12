@@ -2,10 +2,10 @@ let express = require("express");
 let bookingRouter = express.Router();
 
 const { createBooking, getUserBookings, getOwnerJetskiiBookings } = require("../controller/bookingcontroller");
-const { checkAvailability } = require("../controller/checkAvailabilityController");
+const checkAvailability = require("../controller/checkAvailabilityController"); // FIXED 👍
 
 // CHECK AVAILABILITY API
-bookingRouter.post("/check-availability", checkAvailability );
+bookingRouter.post("/check-availability", checkAvailability);
 
 // CREATE BOOKING
 bookingRouter.post("/", createBooking);

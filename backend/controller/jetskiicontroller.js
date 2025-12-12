@@ -23,35 +23,84 @@ let jetskiicontroller = {
     //     })
     //     return res.json(reskii)
     // }
-    store: async (req, res) => {
-    try {
-        let { title, description, about, price } = req.body;
+//     store: async (req, res) => {
+//     try {
+//         let { title, description, about, price } = req.body;
 
-       // FIXED: req.file ❌ -> req.files ✔
-        let uploadImages = req.files.map(async (file) => {
-           let response = await cloudinary.uploader.upload(file.path);
-            return response.secure_url;
-       });
+//        // FIXED: req.file ❌ -> req.files ✔
+//         let uploadImages = req.files.map(async (file) => {
+//            let response = await cloudinary.uploader.upload(file.path);
+//             return response.secure_url;
+//        });
 
-        let images = await Promise.all(uploadImages);
+//         let images = await Promise.all(uploadImages);
 
-        let reskii = await Jetskiis.create({
-            title,
-            description,
-            about,
-            price,
-           images
-        });
+//         let reskii = await Jetskiis.create({
+//             title,
+//             description,
+//             about,
+//             price,
+//            images
+//         });
 
-        return res.json(reskii);
+//         return res.json(reskii);
 
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: "server error" });
+//     } catch (error) {
+//         console.log(error);
+//         return res.status(500).json({ error: "server error" });
+//     }
+// }
+
+   store: async (req, res) => {
+  try {
+    const { title, description, about, price } = req.body;
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload at least 1 image",
+      });
     }
-}
 
-    ,
+    // Upload all images to Cloudinary
+    let uploadedImages = [];
+
+    for (const file of req.files) {
+      const base64 = file.buffer.toString("base64");
+      const dataURI = `data:${file.mimetype};base64,${base64}`;
+
+      const uploaded = await cloudinary.uploader.upload(dataURI, {
+        folder: "jetskii",
+      });
+
+      uploadedImages.push(uploaded.secure_url);
+    }
+
+    // Save to DB
+    const jetskii = await Jetskiis.create({
+     
+      title,
+      description,
+      about,
+      price,
+      images: uploadedImages,
+    });
+
+    return res.json({
+      success: true,
+      message: "Service created successfully",
+      jetskii,
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+},
+
     show: async (req,res) => {
      try {
            let id = req.params.id
@@ -128,6 +177,17 @@ let jetskiicontroller = {
   }
 },
 
+ //API to get all jetskii for a specific jetskii
+  // getOwnerRooms : async(req,res)=>{
+  //   try{
+  //     let hotelData = await Jetskiis.findOne({
+        
+
+  //     })
+  //   }catch(error){
+
+  //   }
+  // }
 
 
     

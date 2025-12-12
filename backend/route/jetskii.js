@@ -1,23 +1,38 @@
-let express = require('express')
-let jetskiicontroller = require('../controller/jetskiicontroller')
-const { protect } = require('../middleware/authMiddleware')
-const upload = require('../middleware/uploadMiddleware')
-const { body, validationResult } = require('express-validator');
+let express = require('express');
+let jetskiicontroller = require('../controller/jetskiicontroller');
+const { protect } = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
+const { body } = require('express-validator');
 const handleerror = require('../middleware/handleerror');
 
+let router = express.Router();
 
+// Get all jetskii
+router.get('/api/jetskii', jetskiicontroller.index);
 
-let router = express.Router()
+// Create jetskii (MUST be logged in)
+router.post(
+  '/api/jetskii',
+  // protect,                        // ✅ Fix: add protect so req.user exists
+  upload.array("images", 4),
+  [
+    body('title').notEmpty(),
+    body('description').notEmpty()
+  ],
+  handleerror,
+  jetskiicontroller.store
+);
 
-router.get('/api/jetskii',jetskiicontroller.index)
+// Get one
+router.get('/api/jetskii/:id', jetskiicontroller.show);
 
-// router.post('/api/jetskii', jetskiicontroller.store)
-router.post('/api/jetskii', [body('title').notEmpty(),body('description').notEmpty()
-],handleerror, upload.array("images", 4) , jetskiicontroller.store)
+// Delete (must be logged in)
+router.delete('/api/jetskii/:id', protect, jetskiicontroller.destory);
 
-router.get('/api/jetskii/:id', jetskiicontroller.show)
+// Update (must be logged in)
+router.patch('/api/jetskii/:id', protect, jetskiicontroller.update);
 
-router.delete('/api/jetskii/:id',jetskiicontroller.destory)
-router.patch('/api/jetskii/:id',jetskiicontroller.update)
-router.patch('/api/jetskii/:id/toggle', jetskiicontroller.toggleAvailability)
-module.exports = router
+// Toggle availability (must be logged in)
+router.patch('/api/jetskii/:id/toggle', jetskiicontroller.toggleAvailability);
+
+module.exports = router;
