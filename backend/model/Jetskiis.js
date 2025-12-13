@@ -78,4 +78,5 @@ let JetskiiSchema = new Schema(
 { timestamps: true }
 )
 
-module.exports = mongoose.model("jetskiis", JetskiiSchema);
+
+module.exports = mongoose.model("Jetskii", JetskiiSchema);
