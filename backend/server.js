@@ -21,6 +21,13 @@ mongoose.connect(mongoURL).then(() => {
 connectCoudinary()
 // RAW BODY → MUST BEFORE EVERYTHING
 app.use('/api/clerk', express.raw({ type: "*/*" }))
+app.use("/api", (req, res, next) => {
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, private"
+  );
+  next();
+});
 
 app.use(clerkMiddleware())
 app.use(express.json())

@@ -25,7 +25,7 @@ const UserModel = require("../model/user");
 
 const protect = async (req, res, next) => {
     try {
-        const { userId } = req.auth;  // Clerk userId
+     const { userId } = req.auth();  // Clerk userId
 
         if (!userId) {
             return res.json({ success: false, message: "not authenticated" });

@@ -1,6 +1,7 @@
 const Booking = require("../model/booking");
 const Jetskiis = require("../model/Jetskiis");
 const checkAvailability = require("../controller/checkAvailabilityController");
+const transporter  = require("../configs/nodemailer");
 
 
 // --------------------------------------------------
@@ -136,16 +137,45 @@ const createBooking = async (req, res) => {
       jetskiTitle: req.body.jetskiTitle,
       checkInDate: req.body.checkInDate,
       checkInTime: req.body.checkInTime,
-      totalPrice: req.body.totalPrice, // or jetskiData.price
+      totalPrice: req.body.totalPrice,
       paymentMethod: req.body.paymentMethod,
     });
 
-    console.log("Booking saved:", booking);
-    res.status(201).json({ success: true, booking });
+    // 🔹 Email sending should NOT break booking
+    try {
+     const mailOptions = {
+  from: `"Jetski Booking" <${process.env.SENDER_EMAIL}>`,
+  to: req.user.email,
+  subject: "Booking Confirmed – Jetski Reservation",
+  html: `
+    <h2>Booking Confirmed 🚤</h2>
+    <p>Dear ${req.user.name || "Customer"},</p>
+    <p>Your booking for <strong>${req.body.jetskiTitle}</strong> is confirmed.</p>
+    <p><strong>Date:</strong> ${new Date(booking.checkInDate).toLocaleDateString()}</p>
+    <p><strong>Time:</strong> ${booking.checkInTime}</p>
+    <p><strong>Total Price:</strong> $${booking.totalPrice}</p>
+  `,
+};
+      await transporter.sendMail(mailOptions);
+      console.log("Confirmation email sent");
+    } catch (emailError) {
+      console.error("Email error:", emailError.message);
+      // ❗ Do NOT throw error
+    }
+
+    res.status(201).json({
+      success: true,
+      booking,
+      message: "Booking created successfully",
+    });
+
   } catch (err) {
-    console.log("Booking error:", err.message);
-    res.status(500).json({ success: false, message: err.message });
-  }
+  console.error("FULL BOOKING ERROR:", err);
+  return res.status(500).json({
+    success: false,
+    message: err.message,
+  });
+}
 };
 
 
@@ -189,12 +219,31 @@ const createBooking = async (req, res) => {
 // };
 
 //FIXED 
+// let getUserBookings = async (req, res) => {
+//   try {
+//     // Clerk userId (string)
+//     const userId = req.userId;
+//  const bookings = await Booking.find({  user: req.user._id, })
+   
+//       .populate("jetskii", "title price images")
+//       .sort({ createdAt: -1 });
+
+//     return res.json({ success: true, bookings });
+//   } catch (error) {
+//     console.error(error);
+//     return res.json({
+//       success: false,
+//       message: "Failed to fetch bookings",
+//     });
+//   }
+// };
+
+
 let getUserBookings = async (req, res) => {
   try {
-    // Clerk userId (string)
-    const userId = req.userId;
+    res.set("Cache-Control", "no-store"); // 👈 ADD THIS
 
-    const bookings = await Booking.find({ userId })
+    const bookings = await Booking.find({ user: req.user._id })
       .populate("jetskii", "title price images")
       .sort({ createdAt: -1 });
 
@@ -207,6 +256,7 @@ let getUserBookings = async (req, res) => {
     });
   }
 };
+
 // --------------------------------------------------
 // Get all bookings by owner
 // --------------------------------------------------

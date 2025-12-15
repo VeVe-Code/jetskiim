@@ -65,15 +65,22 @@ const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     jetskii: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Jetskii",
       required: true,
     },
+
     jetskiTitle: {
-  type: String,
-  required: true
-},
+      type: String,
+      required: true,
+    },
 
     checkInDate: {
       type: Date,

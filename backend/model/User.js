@@ -23,7 +23,7 @@ let UserSchema = new Schema({
     role: {
         type: String,
         enum: ["user", "owner"],
-        default: "user"
+        default: "owener"
     }
 }, { timestamps: true })
 

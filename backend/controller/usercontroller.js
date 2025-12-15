@@ -1,15 +1,15 @@
-const getUserData = async (req, res) => {
-  try {
-    const role = req.user.role;
-    return res.json({ success: true, role });
-  } catch (error) {
-    return res.json({ success: false, message: error.message });
-  }
-};
+// const getUserData = async (req, res) => {
+//   try {
+//     const role = req.user.role;
+//     return res.json({ success: true, role });
+//   } catch (error) {
+//     return res.json({ success: false, message: error.message });
+//   }
+// };
 
 
 
-module.exports = { getUserData };
+// module.exports = { getUserData };
 
 
 
@@ -35,25 +35,22 @@ module.exports = { getUserData };
 // };
 
 // module.exports = { index };
+const getUserData = (req, res) => {
+  try {
+    res.set("Cache-Control", "no-store");
 
+    return res.json({
+      success: true,
+      userId: req.user.clerkId,
+      role: req.user.role, // ✅ MongoDB role
+    });
+  } catch (error) {
+    return res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
-
-// const getUserData = (req, res) => {
-//   try {
-//     const clerkUserId = req.auth.userId;
-//     const role = req.auth.sessionClaims?.role || "user"; // from Clerk JWT template
-
-//     return res.json({
-//       success: true,
-//       userId: clerkUserId,
-//       role,
-//     });
-
-//   } catch (error) {
-//     return res.json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
+module.exports = { getUserData };
 
