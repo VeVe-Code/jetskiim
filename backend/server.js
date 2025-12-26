@@ -1,10 +1,8 @@
 const express = require("express");
 require("dotenv").config();
-
-const app = express();
 const morgan = require("morgan");
 const { clerkMiddleware } = require("@clerk/express");
-const cors = require("cors"); // ✅ ONLY ONCE
+const cors = require("cors");
 const mongoose = require("mongoose");
 
 const jetskiiRoute = require("./route/jetskii");
@@ -12,15 +10,17 @@ const userRoute = require("./route/user");
 const bookingRouter = require("./route/booking");
 const contactusRouter = require("./route/contactus");
 const clertWebhooks = require("./controller/clerkWebhooks");
-const connectCoudinary = require("./configs/cloudinary");
+const connectCloudinary = require("./configs/cloudinary");
 
 const mongoURL = process.env.MONGODB_URI;
+
+const app = express();
 
 // =====================
 // Middleware
 // =====================
 
-// RAW BODY → MUST be before clerk webhook
+// RAW BODY for webhook → MUST be before express.json()
 app.use("/api/clerk", express.raw({ type: "*/*" }));
 
 app.use(cors({
@@ -46,12 +46,21 @@ app.use("/api", (req, res, next) => {
 // =====================
 // Routes
 // =====================
+
+// Clerk webhook → POST only
 app.use("/api/clerk", clertWebhooks);
+
+// Other routes
 app.use("/api/contactus", contactusRouter);
 app.use("/api/bookings", bookingRouter);
-app.use(userRoute);
-app.use(jetskiiRoute);
 
+// Mount user routes with /api prefix
+app.use("/api", userRoute);
+
+// Jetskii routes
+app.use("/api", jetskiiRoute);
+
+// Root
 app.get("/", (req, res) => {
   res.json({ msg: "hello world" });
 });
@@ -60,9 +69,11 @@ app.get("/", (req, res) => {
 // Start server
 // =====================
 mongoose.connect(mongoURL).then(() => {
-  console.log("connected to db");
-  connectCoudinary();
+  console.log("Connected to DB");
+  connectCloudinary();
   app.listen(process.env.PORT, () => {
-    console.log("server is running " + process.env.PORT);
+    console.log("Server is running on port " + process.env.PORT);
   });
+}).catch(err => {
+  console.error("DB connection error:", err.message);
 });

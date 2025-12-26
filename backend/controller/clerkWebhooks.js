@@ -113,7 +113,7 @@ const clertWebhooks = async (req, res) => {
             "svix-signature": req.headers["svix-signature"]
         };
 
-        // IMPORTANT: req.body must be raw buffer
+        // req.body must be raw buffer
         const evt = await whook.verify(req.body, headers);
         const { data, type } = evt;
 
@@ -148,7 +148,7 @@ const clertWebhooks = async (req, res) => {
         res.json({ success: true, message: "Webhook Received" });
     } catch (e) {
         console.log("Webhook Error:", e.message);
-        res.json({ success: false, message: e.message });
+        res.status(400).json({ success: false, message: e.message });
     }
 };
 
