@@ -161,11 +161,9 @@ export const AppProvider = ({ children }) => {
       const token = await getToken();
       if (!token) return;
 
-      const { data } = await axios.get("/api/user", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+   const { data } = await axios.get("/api/user", {
+  headers: { Authorization: `Bearer ${token}` },
+});
 
       if (data.success) {
         setIsOwner(data.role === "owner");
