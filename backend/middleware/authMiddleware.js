@@ -1,5 +1,5 @@
 
-const UserModel = require("../model/user");
+const UserModel = require("../model/User");
 
 const protect = async (req, res, next) => {
   try {
