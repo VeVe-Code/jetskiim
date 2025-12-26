@@ -15,12 +15,7 @@ function App() {
       {!OwnerPath && <Navbar></Navbar>}
       {showJetskiiReg && <JetskiiReg></JetskiiReg>}
     <div className="p-10">
-      <button
-        onClick={() => setOpen(true)}
-        className="px-5 py-3 bg-blue-600 text-white rounded-lg"
-      >
-        Open Register Modal
-      </button>
+
 
       {open && <HotelReg closeModal={() => setOpen(false)} />}
     </div>

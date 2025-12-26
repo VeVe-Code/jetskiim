@@ -17,11 +17,15 @@
 // bookingRouter.get("/owner", getOwnerJetskiiBookings);
 
 // module.exports = bookingRouter;
+
+
+
+
 const express = require("express");
 const bookingRouter = express.Router();
-
 const { createBooking, getUserBookings, getOwnerJetskiiBookings } = require("../controller/bookingcontroller");
 const { protect } = require("../middleware/authMiddleware"); // your protect middleware
+
 
 // Check availability does NOT require login
 bookingRouter.post("/check-availability", require("../controller/checkAvailabilityController"));
@@ -32,7 +36,10 @@ bookingRouter.post("/", protect, createBooking);
 // USER BOOKINGS — requires login
 bookingRouter.get("/user", protect, getUserBookings);
 
+
 // OWNER BOOKINGS — requires login
 bookingRouter.get("/owner", protect, getOwnerJetskiiBookings);
 
 module.exports = bookingRouter;
+
+

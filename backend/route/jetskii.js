@@ -13,7 +13,7 @@ router.get('/api/jetskii', jetskiicontroller.index);
 // Create jetskii (MUST be logged in)
 router.post(
   '/api/jetskii',
-  // protect,                        // ✅ Fix: add protect so req.user exists
+  protect,                        // ✅ Fix: add protect so req.user exists
   upload.array("images", 4),
   [
     body('title').notEmpty(),
@@ -33,6 +33,6 @@ router.delete('/api/jetskii/:id', protect, jetskiicontroller.destory);
 router.patch('/api/jetskii/:id', protect, jetskiicontroller.update);
 
 // Toggle availability (must be logged in)
-router.patch('/api/jetskii/:id/toggle', jetskiicontroller.toggleAvailability);
+router.patch('/api/jetskii/:id/toggle', protect, jetskiicontroller.toggleAvailability);
 
 module.exports = router;

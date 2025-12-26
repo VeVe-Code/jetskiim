@@ -1,0 +1,26 @@
+let mongoose = require('mongoose');
+
+
+let Schema = mongoose.Schema;
+
+let contactusSchema = new Schema({
+   name:{
+    type:String,
+    required:true
+   },
+   email:{
+    type:String,
+    required:true
+   },
+   phone:{
+    type:Number,
+    required:true
+   },
+    message:{
+    type:String,
+    required:true
+    }
+
+}, { timestamps: true })
+
+module.exports = mongoose.model('Contactus', contactusSchema);

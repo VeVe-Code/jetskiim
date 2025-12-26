@@ -10,6 +10,7 @@ let mongoose = require('mongoose')
 const clertWebhooks = require('./controller/clerkWebhooks')
 let connectCoudinary = require('./configs/cloudinary')
 const bookingRouter = require('./route/booking')
+let contactusRouter = require('./route/contactus')
 let mongoURL = process.env.MONGODB_URI 
 
 mongoose.connect(mongoURL).then(() => {
@@ -19,6 +20,8 @@ mongoose.connect(mongoURL).then(() => {
     })
 })
 connectCoudinary()
+
+
 // RAW BODY → MUST BEFORE EVERYTHING
 app.use('/api/clerk', express.raw({ type: "*/*" }))
 app.use("/api", (req, res, next) => {
@@ -39,7 +42,7 @@ app.use(cors({
 }))
 
 app.use("/api/clerk", clertWebhooks)
-
+app.use('/api/contactus',contactusRouter)
 app.get('/', (req, res) => {
     return res.json({ msg: "hello world" })
 })

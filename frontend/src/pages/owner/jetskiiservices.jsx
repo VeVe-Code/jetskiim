@@ -1,17 +1,18 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import ToggleSwitch from "../../components/owner/ToggleSwitch"; // <-- IMPORT
+import Adminservicecard from "../../components/owner/adminservicecard.jsx";
+import { useAppContext } from "../../context/AppContext";
 
 function AllServices() {
+  const { axios, getToken } = useAppContext(); // ✅ FIX
   const [jetskii, setJetskii] = useState([]);
   const [search, setSearch] = useState("");
   const [focused, setFocused] = useState(false);
 
-  // 🔵 Fetch Data
+  // 🔵 Fetch Data (PUBLIC)
   const fetchdata = async () => {
     try {
       const res = await axios.get("/api/jetskii");
@@ -19,7 +20,7 @@ function AllServices() {
         setJetskii(res.data);
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -27,33 +28,47 @@ function AllServices() {
     fetchdata();
   }, []);
 
-  // 🟢 Toggle Availability API
- const toggleAvalability = async (id) => {
-  try {
-    const { data } = await axios.patch(`/api/jetskii/${id}/toggle`);
+  // 🟢 Toggle Availability (PROTECTED)
+  const toggleAvalability = async (id) => {
+    try {
+      const token = await getToken(); // ✅ NOW DEFINED
 
-    if (data.msg) {
-      toast.success(data.msg);
-      fetchdata(); // refresh UI
-    } else {
-      toast.error("Something went wrong");
+      const { data } = await axios.patch(
+        `/api/jetskii/${id}/toggle`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ AUTH
+          },
+        }
+      );
+
+      if (data.msg) {
+        toast.success(data.msg);
+        fetchdata();
+      } else {
+        toast.error("Something went wrong");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err?.response?.data?.message || "Server error"
+      );
     }
-
-  } catch (err) {
-    console.log(err);
-    toast.error("Server error");
-  }
-};
-
+  };
 
   // 🔍 Search filter
   const filtered = jetskii.filter((j) =>
     j.title.toLowerCase().includes(search.toLowerCase())
   );
 
+
+  let onDeleted = (_id) => {
+     setJetskii((prevJetskii) => prevJetskii.filter((j) => j._id !== _id));
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-6 md:p-8 mt-16 md:mt-6">
-
       {/* 🔍 Search Bar */}
       <div className="flex justify-end mb-6">
         <motion.div
@@ -81,7 +96,7 @@ function AllServices() {
           All Jet Car Services
         </h1>
 
-        <Link to="/addservice">
+        <Link to="/owner/JetSkiiServiceForm">
           <button className="px-4 py-2 bg-blue-600 text-white rounded-xl shadow-sm hover:bg-blue-700 transition">
             + Add Service
           </button>
@@ -90,53 +105,9 @@ function AllServices() {
 
       {/* Cards Grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-
         {filtered.length > 0 ? (
           filtered.map((j) => (
-            <div
-              key={j._id}
-              className="p-6 rounded-lg shadow bg-white hover:shadow-lg transition"
-            >
-              {/* Image */}
-              <img
-                src={
-                  j.images && j.images.length > 0
-                    ? j.images[0]
-                    : "https://placehold.co/400"
-                }
-                className="w-full h-48 rounded object-cover"
-              />
-
-              {/* Title */}
-              <h3 className="mt-4 text-xl font-semibold">{j.title}</h3>
-
-              {/* Description */}
-              <p className="text-gray-600 mt-2 line-clamp-2">
-                {j.description}
-              </p>
-
-              {/* Price */}
-              <p className="mt-2 font-bold text-blue-600 text-lg">
-                ${j.price}
-              </p>
-
-              {/* 🔵 Availability Toggle */}
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-gray-600 font-medium">Available</span>
-
-                <ToggleSwitch
-                  checked={j.isAvailable}
-                  onChange={() => toggleAvalability(j._id)}
-                />
-              </div>
-
-              {/* Detail Button */}
-              <Link to={`/service/${j._id}`}>
-                <button className="mt-4 w-full px-5 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                  Detail page
-                </button>
-              </Link>
-            </div>
+          <Adminservicecard key={j._id} j={j} toggleAvalability={toggleAvalability} onDeleted={onDeleted}/>
           ))
         ) : (
           <p className="text-center text-gray-500 col-span-full">

@@ -44,6 +44,8 @@ function ServiceForm() {
     setLoading(true);
 
     try {
+      const token = await getToken(); // ✅ AUTH TOKEN
+
       let formData = new FormData();
       formData.append("title", inputs.title);
       formData.append("description", inputs.description);
@@ -54,7 +56,15 @@ function ServiceForm() {
         if (images[key]) formData.append("images", images[key]);
       });
 
-      const { data } = await axios.post("/api/jetskii", formData);
+      const { data } = await axios.post(
+        "/api/jetskii",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ FIX
+          },
+        }
+      );
 
       if (data.success) {
         toast.success("Service Added Successfully");
@@ -71,12 +81,12 @@ function ServiceForm() {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(
+        error?.response?.data?.message || error.message
+      );
     } finally {
       setLoading(false);
     }
-
-    alert("successful")
   };
 
   return (
@@ -96,48 +106,65 @@ function ServiceForm() {
             type="text"
             className="w-full p-3 mt-1 rounded-xl bg-white/70 border border-gray-300"
             value={inputs.title}
-            onChange={(e) => setInputs({ ...inputs, title: e.target.value })}
+            onChange={(e) =>
+              setInputs({ ...inputs, title: e.target.value })
+            }
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="font-semibold text-gray-800">Description</label>
+          <label className="font-semibold text-gray-800">
+            Description
+          </label>
           <textarea
             className="w-full p-3 mt-1 rounded-xl bg-white/70 border border-gray-300"
             rows="3"
             value={inputs.description}
             onChange={(e) =>
-              setInputs({ ...inputs, description: e.target.value })
+              setInputs({
+                ...inputs,
+                description: e.target.value,
+              })
             }
-          ></textarea>
+          />
         </div>
 
         {/* About */}
         <div>
-          <label className="font-semibold text-gray-800">About</label>
+          <label className="font-semibold text-gray-800">
+            About
+          </label>
           <textarea
             className="w-full p-3 mt-1 rounded-xl bg-white/70 border border-gray-300"
             rows="3"
             value={inputs.about}
-            onChange={(e) => setInputs({ ...inputs, about: e.target.value })}
-          ></textarea>
+            onChange={(e) =>
+              setInputs({ ...inputs, about: e.target.value })
+            }
+          />
         </div>
 
         {/* Price */}
         <div>
-          <label className="font-semibold text-gray-800">Price</label>
+          <label className="font-semibold text-gray-800">
+            Price
+          </label>
           <input
             type="number"
             className="w-full p-3 mt-1 rounded-xl bg-white/70 border border-gray-300"
             value={inputs.price}
-            onChange={(e) => setInputs({ ...inputs, price: e.target.value })}
+            onChange={(e) =>
+              setInputs({ ...inputs, price: e.target.value })
+            }
           />
         </div>
 
         {/* Images */}
         <div>
-          <h2 className="font-semibold mb-2 text-gray-800">Service Images</h2>
+          <h2 className="font-semibold mb-2 text-gray-800">
+            Service Images
+          </h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {Object.keys(images).map((key) => (
@@ -157,7 +184,9 @@ function ServiceForm() {
                 <input
                   type="file"
                   className="hidden"
-                  onChange={(e) => handleImageChange(e, key)}
+                  onChange={(e) =>
+                    handleImageChange(e, key)
+                  }
                 />
 
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-sm text-white transition">

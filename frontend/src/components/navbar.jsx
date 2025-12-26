@@ -54,18 +54,19 @@ export default function Navbar() {
       <div className="flex items-center justify-between">
         {/* Logos */}
         <Link to="/">
-          <img
+          {/* <img
             src="https://readymadeui.com/readymadeui.svg"
             className="w-36 max-sm:hidden"
-          />
+          /> */}
+          <h1 className="text-xl font-bold">Jetskii</h1>
         </Link>
 
-        <Link to="/">
+        {/* <Link to="/">
           <img
             src="https://readymadeui.com/readymadeui-short.svg"
             className="w-10 sm:hidden"
           />
-        </Link>
+        </Link> */}
 
         {/* Desktop Menu */}
         <ul className="hidden lg:flex gap-6">
@@ -92,7 +93,7 @@ export default function Navbar() {
           </li>
           <li>
             <Link
-              to="/contact"
+              to="/contactus"
               className="text-[15px] font-medium hover:text-blue-700"
             >
               Contact
@@ -123,9 +124,7 @@ export default function Navbar() {
           )}
 
           {/* Sign up */}
-          <button className="px-4 py-2 text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700">
-            Sign up
-          </button>
+         
 
           {/* Owner Dashboard / List Jet */}
           {user && (
@@ -191,7 +190,7 @@ export default function Navbar() {
               </Link>
             </li>
             <li className="border-b pb-2">
-              <Link to="/contact" onClick={() => setOpen(false)}>
+              <Link to="/contactus" onClick={() => setOpen(false)}>
                 Contact
               </Link>
             </li>

@@ -20,11 +20,11 @@ let UserSchema = new Schema({
         type: String,
         required: true
     },
-    role: {
-        type: String,
-        enum: ["user", "owner"],
-        default: "owener"
-    }
+  role: {
+  type: String,
+  enum: ["user", "owner"],
+  default: "owner"
+}
 }, { timestamps: true })
 
 module.exports = mongoose.models.User || mongoose.model("User", UserSchema)

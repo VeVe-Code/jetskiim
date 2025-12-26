@@ -70,44 +70,36 @@ const bookingSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-
     jetskii: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Jetskii",
       required: true,
     },
-
     jetskiTitle: {
       type: String,
       required: true,
     },
-
     checkInDate: {
       type: Date,
       required: true,
     },
-
     checkInTime: {
       type: String,
       required: true,
     },
-
     totalPrice: {
       type: Number,
       required: true,
     },
-
     status: {
       type: String,
       enum: ["pending", "confirmed", "cancelled"],
       default: "pending",
     },
-
     paymentMethod: {
       type: String,
       default: "pay at jetskii",
     },
-
     isPaid: {
       type: Boolean,
       default: false,
@@ -117,3 +109,4 @@ const bookingSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Booking", bookingSchema);
+

@@ -49,16 +49,8 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
   tls: {
-    rejectUnauthorized: false, // ✅ FIXES self-signed cert issue
+    rejectUnauthorized: false,
   },
-});
-
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ SMTP VERIFY ERROR:", error);
-  } else {
-    console.log("✅ SMTP is READY to send emails");
-  }
 });
 
 module.exports = transporter;
