@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "../../components/owner/Sidebar";
+import Sidebar from "../../components/owner/sidebar";
 
 function OwnerLayout() {
   const [open, setOpen] = useState(false);
