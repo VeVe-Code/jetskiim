@@ -26,7 +26,7 @@ app.use("/api/clerk", express.raw({ type: "*/*" }));
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://jetskii-newfrontend-nine-lime.vercel.app/"
+    "https://jetskiim-frontend.vercel.app"
   ],
   credentials: true
 }));
