@@ -36,10 +36,15 @@ app.use(clerkMiddleware())
 app.use(express.json())
 app.use(morgan('dev'))
 
+const cors = require("cors");
+
 app.use(cors({
-    origin:"http://localhost:5173",
-    credentials:true
-}))
+  origin: [
+    "http://localhost:5173",
+    "https://jetskiim-mb1m.vercel.app"
+  ],
+  credentials: true
+}));
 
 app.use("/api/clerk", clertWebhooks)
 app.use('/api/contactus',contactusRouter)
