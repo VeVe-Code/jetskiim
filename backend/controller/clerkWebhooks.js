@@ -99,54 +99,57 @@
 
 ////
 
-let User = require('../model/User')
-const { Webhook } = require("svix")
+const User = require("../model/User");
+const { Webhook } = require("svix");
 
-let clertWebhooks = async (req, res) => {
-    try {
-        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
+const clertWebhooks = async (req, res) => {
+  try {
+    const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
-        const headers = {
-            "svix-id": req.headers["svix-id"],
-            "svix-timestamp": req.headers["svix-timestamp"],
-            "svix-signature": req.headers["svix-signature"]
-        }
+    const headers = {
+      "svix-id": req.headers["svix-id"],
+      "svix-timestamp": req.headers["svix-timestamp"],
+      "svix-signature": req.headers["svix-signature"],
+    };
 
-        // IMPORTANT: req.body is RAW Buffer
-        const evt = await whook.verify(req.body, headers)
+    // req.body MUST be raw buffer
+    const evt = whook.verify(req.body, headers);
 
-        const { data, type } = evt
+    const { data, type } = evt;
 
-        let userData = {
-            clerkId: data.id,
-            email: data.email_addresses?.[0]?.email_address,
-            username: (data.first_name || "") + " " + (data.last_name || ""),
-            image: data.image_url
-        }
+    const userData = {
+      clerkId: data.id,
+      email: data.email_addresses?.[0]?.email_address,
+      username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+      image: data.image_url,
+    };
 
-        switch (type) {
-            case "user.created":
-                await User.create(userData)
-                break
+    if (type === "user.created") {
+      const existingUser = await User.findOne({ clerkId: data.id });
 
-            case "user.updated":
-                await User.findOneAndUpdate(
-                    { clerkId: data.id },
-                    userData
-                )
-                break
-
-            case "user.deleted":
-                await User.findOneAndDelete({ clerkId: data.id })
-                break
-        }
-
-        res.json({ success: true, message: "Webhook Received" })
+      if (!existingUser) {
+        await User.create(userData);
+        console.log("✅ User created:", data.id);
+      }
     }
-    catch (e) {
-        console.log("Webhook Error:", e.message)
-        res.json({ success: false, message: e.message })
-    }
-}
 
-module.exports = clertWebhooks
+    if (type === "user.updated") {
+      await User.findOneAndUpdate(
+        { clerkId: data.id },
+        userData,
+        { new: true }
+      );
+    }
+
+    if (type === "user.deleted") {
+      await User.findOneAndDelete({ clerkId: data.id });
+    }
+
+    res.status(200).json({ success: true });
+  } catch (e) {
+    console.error("❌ Clerk Webhook Error:", e.message);
+    res.status(400).json({ success: false, message: e.message });
+  }
+};
+
+module.exports = clertWebhooks;
