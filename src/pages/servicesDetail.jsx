@@ -89,7 +89,7 @@ export default function ServicesDetail() {
     return <h1 className="p-10 text-center">Service Not Found</h1>;
 
   return (
-    <div className="max-w-7xl mx-auto mt-10 px-4 md:px-6 lg:px-10 mt-7">
+    <div className="max-w-7xl mx-auto mt-10 px-4 md:px-6 lg:px-10 ">
 
       {/* Title */}
       <h1 className="text-3xl md:text-4xl font-extrabold mb-6">{jetski.name}</h1>

@@ -100,56 +100,54 @@
 ////
 // Disable body parsing for Vercel
 // pages/api/webhooks/clerk.js
-const User = require('../model/User');
-const { Webhook } = require("svix");
+let User = require('../model/User')
+const { Webhook } = require("svix")
 
-const clertWebhooks = async (req, res) => {
+let clertWebhooks = async (req, res) => {
     try {
-        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
+        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
 
         const headers = {
             "svix-id": req.headers["svix-id"],
             "svix-timestamp": req.headers["svix-timestamp"],
             "svix-signature": req.headers["svix-signature"]
-        };
-
-        // req.body must be raw buffer
-        const evt = await whook.verify(req.body, headers);
-        const { data, type } = evt;
-
-        switch (type) {
-            case "user.created": {
-                const userData = {
-                    clerkId: data.id,
-                    email: data.email_addresses?.[0]?.email_address,
-                    username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
-                    image: data.image_url
-                };
-                await User.create(userData);
-                break;
-            }
-
-            case "user.updated": {
-                const userData = {
-                    clerkId: data.id,
-                    email: data.email_addresses?.[0]?.email_address,
-                    username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
-                    image: data.image_url
-                };
-                await User.findOneAndUpdate({ clerkId: data.id }, userData);
-                break;
-            }
-
-            case "user.deleted":
-                await User.findOneAndDelete({ clerkId: data.id });
-                break;
         }
 
-        res.json({ success: true, message: "Webhook Received" });
-    } catch (e) {
-        console.log("Webhook Error:", e.message);
-        res.status(400).json({ success: false, message: e.message });
-    }
-};
+        // IMPORTANT: req.body is RAW Buffer
+        const evt = await whook.verify(req.body, headers)
 
-module.exports = clertWebhooks;
+        const { data, type } = evt
+
+        let userData = {
+            clerkId: data.id,
+            email: data.email_addresses?.[0]?.email_address,
+            username: (data.first_name || "") + " " + (data.last_name || ""),
+            image: data.image_url
+        }
+
+        switch (type) {
+            case "user.created":
+                await User.create(userData)
+                break
+
+            case "user.updated":
+                await User.findOneAndUpdate(
+                    { clerkId: data.id },
+                    userData
+                )
+                break
+
+            case "user.deleted":
+                await User.findOneAndDelete({ clerkId: data.id })
+                break
+        }
+
+        res.json({ success: true, message: "Webhook Received" })
+    }
+    catch (e) {
+        console.log("Webhook Error:", e.message)
+        res.json({ success: false, message: e.message })
+    }
+}
+
+module.exports = clertWebhooks
