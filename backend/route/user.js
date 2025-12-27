@@ -13,7 +13,7 @@ const { getUserData } = require("../controller/usercontroller.js");
 const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
 
-router.get("/api/user", protect, getUserData); // GET /api/user
+router.get("/", protect, getUserData); // GET /api/user
 
 module.exports = router;
 

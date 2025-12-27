@@ -50,7 +50,7 @@ app.use('/api/contactus',contactusRouter)
 app.get('/', (req, res) => {
     return res.json({ msg: "hello world" })
 })
-app.use(userRoute)
+app.use("/api/user", userRoute);
 app.use('/api/bookings',bookingRouter)
 
 app.use(jetskiiRoute)
