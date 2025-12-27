@@ -1,55 +1,56 @@
-const express = require('express');
-require('dotenv').config();
-const app = express();
-const morgan = require('morgan');
-const { clerkMiddleware } = require('@clerk/express');
-const cors = require('cors');
-const mongoose = require('mongoose');
+let express = require('express')
+require('dotenv').config()
+let app = express()
+let morgan = require('morgan')
+let { clerkMiddleware } = require('@clerk/express')
+var cors = require('cors')
+let jetskiiRoute = require('./route/jetskii')
+let userRoute = require('./route/user')
+let mongoose = require('mongoose')
+const clertWebhooks = require('./controller/clerkWebhooks')
+let connectCoudinary = require('./configs/cloudinary')
+const bookingRouter = require('./route/booking')
+let contactusRouter = require('./route/contactus')
+let mongoURL = process.env.MONGODB_URI 
 
-// Routes
-const jetskiiRoute = require('./route/jetskii');
-const userRoute = require('./route/user');
-const bookingRouter = require('./route/booking');
-const contactusRouter = require('./route/contactus');
-const clertWebhooks = require('./controller/clerkWebhooks');
-const connectCloudinary = require('./configs/cloudinary');
+mongoose.connect(mongoURL).then(() => {
+    console.log('connected to db')
+    app.listen(process.env.PORT, () => {
+        console.log('server is running ' + process.env.PORT)
+    })
+})
+connectCoudinary()
 
-// MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.log(err));
 
-// Cloudinary
-connectCloudinary();
+// RAW BODY → MUST BEFORE EVERYTHING
+app.use('/api/clerk', express.raw({ type: "*/*" }))
+app.use("/api", (req, res, next) => {
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, private"
+  );
+  next();
+});
 
-// Middleware
-app.use('/api/clerk', express.raw({ type: '*/*' })); // Raw body for webhook
-app.use(clerkMiddleware());
-app.use(express.json());
-app.use(morgan('dev'));
+app.use(clerkMiddleware())
+app.use(express.json())
+app.use(morgan('dev'))
 
 app.use(cors({
   origin: [
-    'http://localhost:5173',
-    'https://jetskiim-f.vercel.app'
+    "http://localhost:5173",
+    "https://jetskiim-f.vercel.app"
   ],
   credentials: true
 }));
 
-// Routes
-app.use('/api/clerk', clertWebhooks);         // webhook
-app.use('/api/user', userRoute);              // user routes
-app.use('/api/bookings', bookingRouter);
-app.use('/api/jetskii', jetskiiRoute);
-app.use('/api/contactus', contactusRouter);
-
-// Root
+app.use("/api/clerk", clertWebhooks)
+pp.use("/api/user", userRoute);   
+app.use('/api/contactus',contactusRouter)
 app.get('/', (req, res) => {
-  res.json({ msg: 'hello world' });
-});
+    return res.json({ msg: "hello world" })
+})
+app.use(userRoute)
+app.use('/api/bookings',bookingRouter)
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.use(jetskiiRoute)
