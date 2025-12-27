@@ -11,10 +11,9 @@
 const express = require("express");
 const { getUserData } = require("../controller/usercontroller.js");
 const { protect } = require("../middleware/authMiddleware");
-
 const router = express.Router();
 
-// ✅ Only /user here, /api is added in server.js
-router.get("/user", protect, getUserData);
+router.get("/", protect, getUserData); // GET /api/user
 
 module.exports = router;
+
