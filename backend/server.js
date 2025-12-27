@@ -48,7 +48,9 @@ app.post("/api/clerk", clertWebhooks)
 
 // ✅ Keep only one /api/user route
 app.use("/api/user", userRoute)
-
+app.get("/api/user/test", (req, res) => {
+  res.json({ success: true, msg: "user route works" });
+});
 app.use('/api/contactus',contactusRouter)
 app.get('/', (req, res) => {
     return res.json({ msg: "hello world" })
