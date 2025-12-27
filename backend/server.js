@@ -21,7 +21,6 @@ mongoose.connect(mongoURL).then(() => {
 })
 connectCoudinary()
 
-
 // RAW BODY → MUST BEFORE EVERYTHING
 app.use('/api/clerk', express.raw({ type: "*/*" }))
 app.use("/api", (req, res, next) => {
@@ -44,13 +43,16 @@ app.use(cors({
   credentials: true
 }));
 
-app.use("/api/clerk", clertWebhooks)
-app.use("/api/user", userRoute);  
+// ✅ Fixed: Webhook should be POST
+app.post("/api/clerk", clertWebhooks)
+
+// ✅ Keep only one /api/user route
+app.use("/api/user", userRoute)
+
 app.use('/api/contactus',contactusRouter)
 app.get('/', (req, res) => {
     return res.json({ msg: "hello world" })
 })
-app.use("/api/user", userRoute);
-app.use('/api/bookings',bookingRouter)
 
+app.use('/api/bookings',bookingRouter)
 app.use(jetskiiRoute)
