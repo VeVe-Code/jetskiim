@@ -45,7 +45,7 @@ app.use(cors({
 }));
 
 app.use("/api/clerk", clertWebhooks)
-app.use(userRoute);   
+app.use("/api/user", userRoute);  
 app.use('/api/contactus',contactusRouter)
 app.get('/', (req, res) => {
     return res.json({ msg: "hello world" })
