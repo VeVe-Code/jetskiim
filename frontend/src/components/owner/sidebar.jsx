@@ -7,7 +7,7 @@ function Sidebar({ open, setOpen }) {
   const location = useLocation();
 
   const linkClass = (path) =>
-    `w-full py-4 text-center rounded transition
+    `w-full py-4 rounded text-center transition
      ${
        location.pathname === path
          ? "bg-blue-600 text-white"
@@ -16,7 +16,7 @@ function Sidebar({ open, setOpen }) {
 
   return (
     <>
-      {/* Overlay (mobile only) */}
+      {/* Overlay (Mobile only) */}
       {open && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -26,13 +26,22 @@ function Sidebar({ open, setOpen }) {
 
       <aside
         className={`
-          fixed md:static z-50 top-0 left-0 h-full
-          w-64 md:w-1/6 bg-gray-950 p-6 text-white
+          fixed md:static z-50 top-0 left-0 h-screen
+          w-64 md:w-72 lg:w-80
+          bg-gray-950 text-white p-6
           transform transition-transform duration-300
           ${open ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
         `}
       >
+        {/* Mobile Back */}
+        <button
+          onClick={() => setOpen(false)}
+          className="md:hidden absolute top-4 right-4"
+        >
+          <FaArrowLeft size={22} />
+        </button>
+
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <h1 className="font-bold text-2xl">LOGO</h1>
@@ -42,7 +51,7 @@ function Sidebar({ open, setOpen }) {
         <UserButton />
 
         {/* Menu */}
-        <div className="mt-8 space-y-4">
+        <nav className="mt-8 space-y-4 overflow-y-auto">
           <Link to="/owner" onClick={() => setOpen(false)}>
             <button className={linkClass("/owner")}>Dashboard</button>
           </Link>
@@ -58,7 +67,7 @@ function Sidebar({ open, setOpen }) {
               Contact Us
             </button>
           </Link>
-        </div>
+        </nav>
 
         {/* Mobile Close */}
         <button
@@ -66,14 +75,6 @@ function Sidebar({ open, setOpen }) {
           className="md:hidden w-full mt-8 bg-red-500 py-3 rounded"
         >
           Close
-        </button>
-
-        {/* Mobile Back Arrow */}
-        <button
-          onClick={() => setOpen(false)}
-          className="md:hidden absolute top-4 right-4 text-white"
-        >
-          <FaArrowLeft size={22} />
         </button>
       </aside>
     </>
