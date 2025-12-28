@@ -1,16 +1,17 @@
 import React from "react";
 import { UserButton } from "@clerk/clerk-react";
 import { Link, useLocation } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 
 function Sidebar({ open, setOpen }) {
   const location = useLocation();
 
   const linkClass = (path) =>
-    `w-full py-5 text-center rounded cursor-pointer transition
+    `w-full py-4 text-center rounded transition
      ${
        location.pathname === path
-         ? "bg-blue-500 text-white"
-         : "bg-blue-300 hover:bg-blue-400"
+         ? "bg-blue-600 text-white"
+         : "bg-blue-300 hover:bg-blue-400 text-black"
      }`;
 
   return (
@@ -26,53 +27,53 @@ function Sidebar({ open, setOpen }) {
       <aside
         className={`
           fixed md:static z-50 top-0 left-0 h-full
-          w-64 md:w-1/6 bg-gray-950 p-7 text-white
+          w-64 md:w-1/6 bg-gray-950 p-6 text-white
           transform transition-transform duration-300
           ${open ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
         `}
       >
         {/* Header */}
-        <div className="flex gap-6 items-center mb-6">
+        <div className="flex items-center gap-3 mb-6">
           <h1 className="font-bold text-2xl">LOGO</h1>
-          <h1>Jet Skii</h1>
+          <span className="text-sm opacity-80">Jet Skii</span>
         </div>
 
         <UserButton />
 
         {/* Menu */}
-        <div className="mt-6 space-y-5">
-         <div>
-           <Link to="/owner" onClick={() => setOpen(false)}>
-            <button className={linkClass("/owner")}>
-              Dashboard
-            </button>
+        <div className="mt-8 space-y-4">
+          <Link to="/owner" onClick={() => setOpen(false)}>
+            <button className={linkClass("/owner")}>Dashboard</button>
           </Link>
-         </div>
 
-         <div>
-           <Link to="/owner/jetskiiservice" onClick={() => setOpen(false)}>
-            <button className={linkClass("/owner/jetskiiservices")}>
+          <Link to="/owner/jetskiiservice" onClick={() => setOpen(false)}>
+            <button className={linkClass("/owner/jetskiiservice")}>
               Jetskii Services
             </button>
           </Link>
-         </div>
 
-        <div>
-            <Link to="/owner/adminContactus" onClick={() => setOpen(false)}>
+          <Link to="/owner/adminContactus" onClick={() => setOpen(false)}>
             <button className={linkClass("/owner/adminContactus")}>
-              Contact us
+              Contact Us
             </button>
           </Link>
         </div>
-        </div>
 
-        {/* Close button (mobile only) */}
+        {/* Mobile Close */}
         <button
           onClick={() => setOpen(false)}
-          className="md:hidden w-full mt-6 bg-red-500 py-3 rounded"
+          className="md:hidden w-full mt-8 bg-red-500 py-3 rounded"
         >
           Close
+        </button>
+
+        {/* Mobile Back Arrow */}
+        <button
+          onClick={() => setOpen(false)}
+          className="md:hidden absolute top-4 right-4 text-white"
+        >
+          <FaArrowLeft size={22} />
         </button>
       </aside>
     </>
