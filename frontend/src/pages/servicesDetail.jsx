@@ -131,7 +131,7 @@ useEffect(() => {
 
       if (bookingRes.data.success) {
         toast.success("Booking successful");
-        navigate("/my-booking");
+        navigate("/my-bookings");
       } else {
         toast.error("Booking failed");
       }

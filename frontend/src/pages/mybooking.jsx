@@ -21,7 +21,7 @@ export default function MyBooking() {
             Authorization: `Bearer ${token}`,
           },
         });
-
+        console.log("BOOKING DATA:", data);
         setBookings(Array.isArray(data.bookings) ? data.bookings : []);
       } catch (error) {
         console.error("BOOKING ERROR:", error.response || error);

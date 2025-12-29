@@ -20,11 +20,12 @@ export default function AdminServicesDetail() {
   const [selectedTime, setSelectedTime] = useState("");
   const [loadingBooking, setLoadingBooking] = useState(false);
 
-  // Fetch Jetski details
+  /* =========================
+     FETCH JETSKI
+  ========================= */
   useEffect(() => {
     const fetchJetski = async () => {
       try {
-        setLoadingData(true);
         const res = await axios.get(`/api/jetskii/${id}`);
         setJetski(res.data);
         setMainImage(res.data.images?.[0]);
@@ -37,22 +38,27 @@ export default function AdminServicesDetail() {
     fetchJetski();
   }, [id]);
 
-  // Generate time slots
+  /* =========================
+     TIME SLOTS
+  ========================= */
   const generateTimeSlots = () => {
     const slots = [];
     let hour = 10;
     let minute = 0;
 
-    while (hour < 17 || (hour === 17 && minute === 0)) {
+    while (hour < 17) {
       const label = new Date(2025, 1, 1, hour, minute).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       });
+
       const value = `${hour.toString().padStart(2, "0")}:${minute
         .toString()
         .padStart(2, "0")}`;
+
       slots.push({ label, value });
       minute += 15;
+
       if (minute === 60) {
         minute = 0;
         hour++;
@@ -62,25 +68,27 @@ export default function AdminServicesDetail() {
     return slots;
   };
 
-  // Update available times when date changes
   useEffect(() => {
     if (!date) return;
 
     const slots = generateTimeSlots();
 
-    // TODO: Replace with API call to get booked times for selected date
-    const bookedTimes = ["12:15", "14:30"];
+    // TEMP booked times (replace with API later)
+    const bookedTimes = [];
 
-    const updated = slots.map((slot) => ({
-      ...slot,
-      isBooked: bookedTimes.includes(slot.value),
-    }));
+    setTimeSlots(
+      slots.map((slot) => ({
+        ...slot,
+        isBooked: bookedTimes.includes(slot.value),
+      }))
+    );
 
-    setTimeSlots(updated);
     setSelectedTime("");
   }, [date]);
 
-  // Handle booking
+  /* =========================
+     HANDLE BOOKING
+  ========================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -89,22 +97,16 @@ export default function AdminServicesDetail() {
       return;
     }
 
-    if (!jetski || !jetski.title) {
-      toast.error("Service data not loaded yet. Please wait.");
-      return;
-    }
-
     try {
       setLoadingBooking(true);
 
       const token = await getToken();
       if (!token) {
-        toast.error("You must be logged in to book");
-        setLoadingBooking(false);
+        toast.error("Login required");
         return;
       }
 
-      // Check availability (optional)
+      // 1️⃣ Check availability
       const checkRes = await axios.post(
         "/api/bookings/check-availability",
         {
@@ -112,24 +114,35 @@ export default function AdminServicesDetail() {
           checkInDate: date.toISOString(),
           checkInTime: selectedTime,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
       if (!checkRes.data.isAvailable) {
-        toast.error("Jetski is not available at this time");
-        setLoadingBooking(false);
+        toast.error("Time slot not available");
         return;
       }
 
-      // Create booking
-   
+      // 2️⃣ Create booking
+      const bookingRes = await axios.post(
+        "/api/bookings",
+        {
+          jetskiiId: id,
+          checkInDate: date.toISOString(),
+          checkInTime: selectedTime,
+          paymentMethod: "stripe",
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (bookingRes.data.success) {
         toast.success("Booking successful");
-        navigate("/my-booking");
-        window.scrollTo(0, 0);
+        navigate("/my-bookings");
       } else {
-        toast.error(bookingRes.data.message || "Booking failed");
+        toast.error("Booking failed");
       }
     } catch (err) {
       console.error(err);
@@ -139,55 +152,73 @@ export default function AdminServicesDetail() {
     }
   };
 
-  if (loadingData) return <h1 className="p-10 text-center">Loading service...</h1>;
-  if (!jetski) return <h1 className="p-10 text-center">Service not found</h1>;
+  /* =========================
+     UI
+  ========================= */
+  if (loadingData) return <h1 className="p-10 text-center">Loading...</h1>;
+  if (!jetski) return <h1 className="p-10 text-center">Not found</h1>;
 
   return (
-    <div className="max-w-7xl mx-auto mt-10 px-4 md:px-6 lg:px-10">
-      {/* Jetski Name */}
-      <h1 className="text-3xl md:text-4xl font-extrabold mb-6 flex items-center gap-2">
-        <BookOpenIcon className="w-8 h-8 text-blue-600" /> {jetski.title}
+    <div className="max-w-7xl mx-auto mt-10 px-4">
+      <h1 className="text-4xl font-extrabold mb-6 flex items-center gap-2">
+        <BookOpenIcon className="w-8 h-8 text-blue-600" />
+        {jetski.title}
       </h1>
 
       <div className="grid lg:grid-cols-3 gap-10">
-        {/* LEFT SIDE */}
+        {/* LEFT */}
         <div className="lg:col-span-2">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
-            <div className="md:col-span-2 rounded-2xl overflow-hidden shadow-xl">
-              <img
-                src={mainImage}
-                className="w-full h-[320px] md:h-[400px] object-cover"
-                alt={jetski.title}
-              />
-            </div>
-            <div className="grid grid-cols-3 md:grid-cols-1 gap-3">
-              {jetski.images?.slice(1).map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setMainImage(img)}
-                  className="rounded-xl overflow-hidden border"
-                >
-                  <img
-                    src={img}
-                    className="w-full h-[90px] md:h-[120px] object-cover"
-                    alt={`${jetski.name} ${i}`}
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
+          <img
+            src={mainImage}
+            className="w-full h-[400px] object-cover rounded-2xl shadow-xl"
+            alt={jetski.title}
+          />
 
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border">
-            <p className="text-2xl font-semibold">{jetski.name}</p>
-            <p className="text-2xl font-semibold">{jetski.description}</p>
-            <p className="text-2xl font-semibold">{jetski.about}</p>
-            <p className="text-3xl font-extrabold text-blue-600">${jetski.price}</p>
-            <p className="text-gray-500 text-lg">Duration: {jetski.time}</p>
+          <div className="mt-6 bg-white p-6 rounded-xl shadow border">
+            <p className="text-xl">{jetski.description}</p>
+            <p className="text-2xl font-bold text-blue-600 mt-2">
+              ${jetski.price}
+            </p>
           </div>
         </div>
 
         {/* RIGHT FORM */}
-       
+        <div className="bg-white p-6 rounded-2xl shadow-xl border">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Calendar
+              value={date}
+              onChange={setDate}
+              minDate={new Date()}
+            />
+
+            {date && (
+              <div className="grid grid-cols-3 gap-2">
+                {timeSlots.map((slot) => (
+                  <button
+                    type="button"
+                    key={slot.value}
+                    disabled={slot.isBooked}
+                    onClick={() => setSelectedTime(slot.value)}
+                    className={`p-2 rounded-lg border
+                      ${slot.isBooked && "bg-gray-300"}
+                      ${selectedTime === slot.value && "bg-blue-600 text-white"}
+                    `}
+                  >
+                    {slot.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loadingBooking}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700"
+            >
+              {loadingBooking ? "Booking..." : "Book Now"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
