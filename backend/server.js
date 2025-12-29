@@ -12,7 +12,7 @@ let connectCoudinary = require('./configs/cloudinary')
 const bookingRouter = require('./route/booking')
 let contactusRouter = require('./route/contactus')
 let mongoURL = process.env.MONGODB_URI 
-
+let stripeWebhooks = require('./controller/stripeWebhooks')
 mongoose.connect(mongoURL).then(() => {
     console.log('connected to db')
     app.listen(process.env.PORT, () => {
@@ -42,6 +42,7 @@ app.use(cors({
   ],
   credentials: true
 }));
+app.post('/api/stripe-webhooks', express.raw({type: 'application/json'}), stripeWebhooks)
 
 // ✅ Fixed: Webhook should be POST
 app.post("/api/clerk", clertWebhooks)

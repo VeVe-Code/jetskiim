@@ -22,9 +22,6 @@ export default function MyBooking() {
           },
         });
 
-        console.log("BOOKINGS RESPONSE:", data);
-
-        // Always force array
         setBookings(Array.isArray(data.bookings) ? data.bookings : []);
       } catch (error) {
         console.error("BOOKING ERROR:", error.response || error);
@@ -36,6 +33,32 @@ export default function MyBooking() {
 
     fetchBookings();
   }, [getToken, isLoaded]);
+
+  const handlePayment = async (bookingId) => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const { data } = await axios.post(
+        "/api/bookings/stripe-payment",
+        { bookingId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (data.success) {
+        window.location.href = data.url; // Stripe checkout
+      } else {
+        alert("Payment initiation failed");
+      }
+    } catch (err) {
+      console.error("PAYMENT ERROR:", err);
+      alert("Something went wrong");
+    }
+  };
 
   if (loading) {
     return <p className="text-center mt-20">Loading...</p>;
@@ -64,28 +87,41 @@ export default function MyBooking() {
               />
 
               {/* Details */}
-              <div className="flex-1 p-6">
-                <h2 className="text-2xl font-bold">
-                  {b.jetskii?.title || "Jetski"}
-                </h2>
+              <div className="flex-1 p-6 flex flex-col justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">
+                    {b.jetskii?.title || "Jetski"}
+                  </h2>
 
-                <div className="mt-3 text-gray-600 space-y-1">
-                  <p>
-                    <span className="font-semibold">Status:</span> {b.status}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Price:</span>{" "}
-                    ${b.jetskii?.price}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Date:</span>{" "}
-                    {new Date(b.checkInDate).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Time:</span>{" "}
-                    {b.checkInTime}
-                  </p>
+                  <div className="mt-3 text-gray-600 space-y-1">
+                    <p>
+                      <span className="font-semibold">Status:</span>{" "}
+                      {b.status}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Price:</span> $
+                      {b.jetskii?.price}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Date:</span>{" "}
+                      {new Date(b.checkInDate).toLocaleDateString()}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Time:</span>{" "}
+                      {b.checkInTime}
+                    </p>
+                  </div>
                 </div>
+
+                {/* Pay Now Button */}
+         {!b.isPaid && (
+  <button
+    onClick={() => handlePayment(b._id)}
+    className="mt-4 w-full md:w-40 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
+  >
+    Pay Now
+  </button>
+)}
               </div>
             </div>
           ))}

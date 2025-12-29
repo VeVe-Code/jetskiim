@@ -20,6 +20,7 @@ import { RouterProvider } from "react-router/dom";
 import AdminContactusdetail from './pages/owner/admincontactusdetail.jsx';
 import { ClerkProvider } from '@clerk/clerk-react';
 import AdminServicesDetail from './pages/AdminservicesDetail.jsx';
+import Loader from './components/loder.jsx';
 
 
 // Clerk key
@@ -43,6 +44,7 @@ const router = createBrowserRouter([
       { path: "/allservices", element: <Allservice /> },
       { path: "/service/:id", element: <ServiceDetail /> },
       { path: "/my-booking", element: <MyBooking /> },
+      {path: "/loader/:nextUrl", element: <Loader /> },
             { path: "/about", element: <About /> },
       { path: "/contactus", element: <Contactus /> },
     ],

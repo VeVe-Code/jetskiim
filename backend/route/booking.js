@@ -23,7 +23,7 @@
 
 const express = require("express");
 const bookingRouter = express.Router();
-const { createBooking, getUserBookings, getOwnerJetskiiBookings } = require("../controller/bookingcontroller");
+const { createBooking, getUserBookings, getOwnerJetskiiBookings, stripePayment } = require("../controller/bookingcontroller");
 const { protect } = require("../middleware/authMiddleware"); // your protect middleware
 
 
@@ -39,6 +39,8 @@ bookingRouter.get("/user", protect, getUserBookings);
 
 // OWNER BOOKINGS — requires login
 bookingRouter.get("/owner", protect, getOwnerJetskiiBookings);
+
+bookingRouter.post("/stripe-payment", protect, stripePayment );
 
 module.exports = bookingRouter;
 
