@@ -119,7 +119,7 @@ const stripePayment = async (req, res) => {
     const booking = await Booking.findById(bookingId);
     if (!booking) return res.json({ success: false, message: "Booking not found" });
 
-    const jetskii = await Jetskiis.findById(booking.jetskii);
+    const jetskii = await Jetskiis.findById(booking.jetskii).populate("owner");
     if (!jetskii) return res.json({ success: false, message: "Jetskii not found" });
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);

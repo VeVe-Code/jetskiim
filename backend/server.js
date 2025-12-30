@@ -28,11 +28,7 @@ connectCoudinary();
 /* ================================
    🔴 STRIPE WEBHOOK MUST BE FIRST
 ================================ */
-app.post(
-  "/api/stripe-webhooks",
-  express.raw({ type: "application/json" }),
-  stripeWebhooks
-);
+app.post("/api/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
 
 /* ================================
    CLERK WEBHOOK (RAW)
