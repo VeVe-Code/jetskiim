@@ -1,18 +1,15 @@
 const Stripe = require("stripe");
 const Booking = require("../model/booking");
 
-// Stripe init
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-module.exports = async (req, res) => {
-  // 🔥 WEBHOOK HIT LOG
+const stripeWebhooks = async (req, res) => {
   console.log("🔥 STRIPE WEBHOOK HIT");
 
   const sig = req.headers["stripe-signature"];
   let event;
 
   try {
-    // ⚠️ express.raw() body ကို သုံးရမယ်
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
@@ -23,37 +20,30 @@ module.exports = async (req, res) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // ✅ Payment success event
+  console.log("✅ Event type:", event.type);
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
+    console.log("💳 Payment status:", session.payment_status);
 
-    console.log("✅ Checkout completed");
-    console.log("SESSION METADATA:", session.metadata);
+    if (session.payment_status === "paid") {
+      const bookingId = session.metadata.bookingId;
 
-    const bookingId = session.metadata?.bookingId;
-
-    if (!bookingId) {
-      console.error("❌ bookingId not found in metadata");
-      return res.status(400).json({ msg: "bookingId missing" });
-    }
-
-    try {
-      await Booking.findByIdAndUpdate(
+      const updated = await Booking.findByIdAndUpdate(
         bookingId,
         {
           isPaid: true,
-          status: "paid",
+          status: "confirmed",
+          paymentMethod: "stripe",
         },
         { new: true }
       );
 
-      console.log("✅ Booking updated to PAID:", bookingId);
-    } catch (dbErr) {
-      console.error("❌ DB update error:", dbErr);
-      return res.status(500).json({ msg: "DB update failed" });
+      console.log("✅ UPDATED BOOKING:", updated);
     }
   }
 
-  // Stripe ကို response ပြန်ပေးမရင် retry လုပ်နေမယ်
   res.json({ received: true });
 };
+
+module.exports = stripeWebhooks;
