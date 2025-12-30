@@ -138,7 +138,7 @@ const stripePayment = async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/loader/my-bookings`,
+      success_url: `${origin}/loder/my-bookings`,
       cancel_url: `${origin}/my-bookings`,
       metadata: { bookingId: booking._id.toString() },
     });
