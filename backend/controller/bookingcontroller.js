@@ -116,64 +116,37 @@ const getOwnerJetskiiBookings = async (req, res) => {
 const stripePayment = async (req, res) => {
   try {
     const { bookingId } = req.body;
-
-    // 1️⃣ Find booking
     const booking = await Booking.findById(bookingId);
-    if (!booking) {
-      return res.json({ success: false, message: "Booking not found" });
-    }
+    if (!booking) return res.json({ success: false, message: "Booking not found" });
 
-    // 2️⃣ Find jetskii
-    const jetskii = await Jetskiis.findById(booking.jetskii).populate("owner");
-    if (!jetskii) {
-      return res.json({ success: false, message: "Jetskii not found" });
-    }
+    const jetskii = await Jetskiis.findById(booking.jetskii);
+    if (!jetskii) return res.json({ success: false, message: "Jetskii not found" });
 
-    // 3️⃣ Validate price
-    const totalPrice = booking.totalPrice;
-    if (!totalPrice || totalPrice <= 0) {
-      return res.json({ success: false, message: "Invalid price" });
-    }
-
-    // 4️⃣ Stripe instance
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
     const { origin } = req.headers;
 
-    // 5️⃣ Stripe session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
       mode: "payment",
+      payment_method_types: ["card"],
       line_items: [
         {
           price_data: {
             currency: "usd",
-            product_data: {
-              name: jetskii.title,
-            },
-            unit_amount: totalPrice * 100, // ✅ FIXED
+            product_data: { name: jetskii.title },
+            unit_amount: booking.totalPrice * 100,
           },
           quantity: 1,
         },
       ],
       success_url: `${origin}/loader/my-bookings`,
       cancel_url: `${origin}/my-bookings`,
-      metadata: {
-        bookingId: booking._id.toString(),
-      },
+      metadata: { bookingId: booking._id.toString() },
     });
 
-    return res.json({
-      success: true,
-      url: session.url,
-    });
-
-  } catch (error) {
-    console.error("STRIPE ERROR:", error);
-    return res.json({
-      success: false,
-      message: "Payment failed",
-    });
+    res.json({ success: true, url: session.url });
+  } catch (err) {
+    console.error("STRIPE ERROR:", err);
+    res.json({ success: false, message: "Payment failed" });
   }
 };
 
