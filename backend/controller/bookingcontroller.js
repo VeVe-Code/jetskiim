@@ -116,11 +116,14 @@ const getOwnerJetskiiBookings = async (req, res) => {
 const stripePayment = async (req, res) => {
   try {
     const { bookingId } = req.body;
-    const booking = await Booking.findById(bookingId);
-    if (!booking) return res.json({ success: false, message: "Booking not found" });
 
-    const jetskii = await Jetskiis.findById(booking.jetskii).populate("owner");
-    if (!jetskii) return res.json({ success: false, message: "Jetskii not found" });
+    const booking = await Booking.findById(bookingId);
+    if (!booking)
+      return res.status(404).json({ success: false, message: "Booking not found" });
+
+    const jetskii = await Jetskiis.findById(booking.jetskii);
+    if (!jetskii)
+      return res.status(404).json({ success: false, message: "Jetskii not found" });
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const { origin } = req.headers;
@@ -132,21 +135,25 @@ const stripePayment = async (req, res) => {
         {
           price_data: {
             currency: "usd",
-            product_data: { name: jetskii.title },
+            product_data: {
+              name: jetskii.title,
+            },
             unit_amount: booking.totalPrice * 100,
           },
           quantity: 1,
         },
       ],
-      success_url: `${origin}/loder/my-bookings`,
+      success_url: `${origin}/loader/my-bookings`, // ✅ FIXED
       cancel_url: `${origin}/my-bookings`,
-      metadata: { bookingId: booking._id.toString() },
+      metadata: {
+        bookingId: booking._id.toString(), // ⭐ VERY IMPORTANT
+      },
     });
 
     res.json({ success: true, url: session.url });
   } catch (err) {
-    console.error("STRIPE ERROR:", err);
-    res.json({ success: false, message: "Payment failed" });
+    console.error("STRIPE PAYMENT ERROR:", err);
+    res.status(500).json({ success: false, message: "Payment failed" });
   }
 };
 

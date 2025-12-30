@@ -22,11 +22,11 @@ const stripeWebhooks = async (req, res) => {
 
   console.log("✅ Event type:", event.type);
 
-  // ✅ THIS IS THE FIX
-  if (event.type === "payment_intent.succeeded") {
-    const paymentIntent = event.data.object;
+  // ⭐⭐⭐ CHECKOUT SESSION COMPLETED ⭐⭐⭐
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
 
-    const bookingId = paymentIntent.metadata.bookingId;
+    const bookingId = session.metadata?.bookingId;
 
     if (!bookingId) {
       console.log("❌ bookingId not found in metadata");
