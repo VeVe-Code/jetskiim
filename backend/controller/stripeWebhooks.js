@@ -22,25 +22,28 @@ const stripeWebhooks = async (req, res) => {
 
   console.log("✅ Event type:", event.type);
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    console.log("💳 Payment status:", session.payment_status);
+  // ✅ THIS IS THE FIX
+  if (event.type === "payment_intent.succeeded") {
+    const paymentIntent = event.data.object;
 
-    if (session.payment_status === "paid") {
-      const bookingId = session.metadata.bookingId;
+    const bookingId = paymentIntent.metadata.bookingId;
 
-      const updated = await Booking.findByIdAndUpdate(
-        bookingId,
-        {
-          isPaid: true,
-          status: "confirmed",
-          paymentMethod: "stripe",
-        },
-        { new: true }
-      );
-
-      console.log("✅ UPDATED BOOKING:", updated);
+    if (!bookingId) {
+      console.log("❌ bookingId not found in metadata");
+      return res.json({ received: true });
     }
+
+    const updated = await Booking.findByIdAndUpdate(
+      bookingId,
+      {
+        isPaid: true,
+        status: "confirmed",
+        paymentMethod: "stripe",
+      },
+      { new: true }
+    );
+
+    console.log("✅ BOOKING CONFIRMED:", updated);
   }
 
   res.json({ received: true });
