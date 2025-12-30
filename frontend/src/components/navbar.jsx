@@ -110,7 +110,7 @@ export default function Navbar() {
                 <UserButton.Action
                   label="My Booking"
                   labelIcon={BookIcon}
-                  onClick={() => navigate("/my-booking")}
+                  onClick={() => navigate("/my-bookings")}
                 />
               </UserButton.MenuItems>
             </UserButton>

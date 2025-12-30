@@ -11,7 +11,6 @@ export default function ServicesDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getToken } = useAuth();
-
   const [jetski, setJetski] = useState(null);
   const [loadingData, setLoadingData] = useState(true);
   const [date, setDate] = useState(null);

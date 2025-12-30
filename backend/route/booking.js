@@ -45,3 +45,4 @@ bookingRouter.post("/stripe-payment", protect, stripePayment );
 module.exports = bookingRouter;
 
 
+

@@ -1,40 +1,51 @@
-let express = require('express')
-require('dotenv').config()
-let app = express()
-let morgan = require('morgan')
-let { clerkMiddleware } = require('@clerk/express')
-var cors = require('cors')
-let jetskiiRoute = require('./route/jetskii')
-let userRoute = require('./route/user')
-let mongoose = require('mongoose')
-const clertWebhooks = require('./controller/clerkWebhooks')
-let connectCoudinary = require('./configs/cloudinary')
-const bookingRouter = require('./route/booking')
-let contactusRouter = require('./route/contactus')
-let mongoURL = process.env.MONGODB_URI 
-let stripeWebhooks = require('./controller/stripeWebhooks')
-mongoose.connect(mongoURL).then(() => {
-    console.log('connected to db')
-    app.listen(process.env.PORT, () => {
-        console.log('server is running ' + process.env.PORT)
-    })
-})
-connectCoudinary()
+let express = require("express");
+require("dotenv").config();
+let app = express();
+let morgan = require("morgan");
+let { clerkMiddleware } = require("@clerk/express");
+let cors = require("cors");
+let mongoose = require("mongoose");
 
-// RAW BODY → MUST BEFORE EVERYTHING
-app.use('/api/clerk', express.raw({ type: "*/*" }))
-app.use("/api", (req, res, next) => {
-  res.setHeader(
-    "Cache-Control",
-    "no-store, no-cache, must-revalidate, private"
-  );
-  next();
+let jetskiiRoute = require("./route/jetskii");
+let userRoute = require("./route/user");
+let bookingRouter = require("./route/booking");
+let contactusRouter = require("./route/contactus");
+
+let stripeWebhooks = require("./controller/stripeWebhooks");
+let clertWebhooks = require("./controller/clerkWebhooks");
+
+let connectCoudinary = require("./configs/cloudinary");
+
+mongoose.connect(process.env.MONGODB_URI).then(() => {
+  console.log("connected to db");
+  app.listen(process.env.PORT, () => {
+    console.log("server is running " + process.env.PORT);
+  });
 });
 
-app.use(clerkMiddleware())
-app.use(express.json())
-app.use(morgan('dev'))
+connectCoudinary();
 
+/* ================================
+   🔴 STRIPE WEBHOOK MUST BE FIRST
+================================ */
+app.post(
+  "/api/stripe-webhooks",
+  express.raw({ type: "application/json" }),
+  stripeWebhooks
+);
+
+/* ================================
+   CLERK WEBHOOK (RAW)
+================================ */
+app.post(
+  "/api/clerk",
+  express.raw({ type: "*/*" }),
+  clertWebhooks
+);
+
+/* ================================
+   NORMAL MIDDLEWARES
+================================ */
 app.use(cors({
   origin: [
     "http://localhost:5173",
@@ -42,20 +53,24 @@ app.use(cors({
   ],
   credentials: true
 }));
-app.post('/api/stripe-webhooks', express.raw({type: 'application/json'}), stripeWebhooks)
 
-// ✅ Fixed: Webhook should be POST
-app.post("/api/clerk", clertWebhooks)
+app.use(morgan("dev"));
+app.use(clerkMiddleware());
+app.use(express.json());
 
-// ✅ Keep only one /api/user route
-app.use("/api/user", userRoute)
-app.get("/api/user/test", (req, res) => {
-  res.json({ success: true, msg: "user route works" });
+app.use("/api", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
 });
-app.use('/api/contactus',contactusRouter)
-app.get('/', (req, res) => {
-    return res.json({ msg: "hello world" })
-})
 
-app.use('/api/bookings',bookingRouter)
-app.use(jetskiiRoute)
+/* ================================
+   ROUTES
+================================ */
+app.use("/api/user", userRoute);
+app.use("/api/bookings", bookingRouter);
+app.use("/api/contactus", contactusRouter);
+app.use(jetskiiRoute);
+
+app.get("/", (req, res) => {
+  res.json({ msg: "hello world" });
+});

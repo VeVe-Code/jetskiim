@@ -1,35 +1,44 @@
-const { request } = require('express');
-let stripe = require('stripe');
-const booking = require('../model/booking');
+const Stripe = require("stripe");
+const Booking = require("../model/booking");
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-let stripeWebhooks = async (req, res) => {
-    let stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
-    let sig = request.headers['stripe-signature'];
-    let event;
-    try {
-        event = stripeInstance.webhooks.constructEvent(
-            req.body,
-            sig,
-            process.env.STRIPE_WEBHOOK_SECRET
-        );
-    } catch (error) {
-        res.status(400).send(`Webhook Error: ${error.message}`);
-    }
-    // Handle the event
-    if(event.type === 'payment_intent.succeeded'){
-        const paymentIntent = event.data.object;
-        let paymentIntentId = paymentIntent.id;
+const stripeWebhooks = async (req, res) => {
+  const sig = req.headers["stripe-signature"]; // ✅ FIXED
 
-        let session = await stripeInstance.checout.sessions.list({
-            payment_intent: paymentIntentId,
-        })
+  let event;
 
-        let {bookingId} = session.data[0].metadata;
-        await booking.findByIdAndUpdate(bookingId, {isPaid: true});
-        console.log('PaymentIntent was successful!');
-        res.json({received: true});
-    }
-}
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error("❌ Webhook signature failed:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // ✅ CORRECT EVENT
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+
+    const bookingId = session.metadata.bookingId;
+
+    await Booking.findByIdAndUpdate(
+      bookingId,
+      {
+        isPaid: true,
+        status: "confirmed",
+        paymentMethod: "stripe",
+      },
+      { new: true }
+    );
+
+    console.log("✅ Booking marked as PAID:", bookingId);
+  }
+
+  res.json({ received: true });
+};
 
 module.exports = stripeWebhooks;
