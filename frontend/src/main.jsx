@@ -44,7 +44,7 @@ const router = createBrowserRouter([
       { path: "/allservices", element: <Allservice /> },
       { path: "/service/:id", element: <ServiceDetail /> },
       { path: "/my-bookings", element: <MyBooking /> },
-      {path: "/loader/:nextUrl", element: <Loader /> },
+      {path: "/loder/:nextUrl", element: <Loader /> },
             { path: "/about", element: <About /> },
       { path: "/contactus", element: <Contactus /> },
     ],
