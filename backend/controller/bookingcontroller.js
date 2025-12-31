@@ -143,7 +143,7 @@ const stripePayment = async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/loader/my-bookings`, // ✅ FIXED
+      success_url: `${origin}/loder/my-bookings`, // ✅ FIXED
       cancel_url: `${origin}/my-bookings`,
       metadata: {
         bookingId: booking._id.toString(), // ⭐ VERY IMPORTANT
@@ -155,7 +155,7 @@ const stripePayment = async (req, res) => {
     console.error("STRIPE PAYMENT ERROR:", err);
     res.status(500).json({ success: false, message: "Payment failed" });
   }
-};
+};  
 
 module.exports = { 
   createBooking, 
